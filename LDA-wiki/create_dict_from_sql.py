@@ -20,9 +20,9 @@ mydb = mysql.connector.connect (
     password=cfg.mysql["password"],
     database=cfg.mysql["database"]
 )
-
+our_stopwords = ["rowspan", "colspan", "efefef", "bgcolor", "afeee", "Jones", "New"]
 mycursor = mydb.cursor()
-selectQuery = "SELECT article FROM bios_text LIMIT 1000"
+selectQuery = "SELECT id, article FROM bios_final LIMIT 160000"
 mycursor.execute(selectQuery)
 myresult = mycursor.fetchall()
 
@@ -32,26 +32,25 @@ def lemmatize_stemming(text):
 def preprocess(text):
     result = []
     for token in gensim.utils.simple_preprocess(text):
-        if token not in gensim.parsing.preprocessing.STOPWORDS and len(token) > 3:
+        if token not in gensim.parsing.preprocessing.STOPWORDS and token not in our_stopwords and len(token) > 3:
             result.append(lemmatize_stemming(token))
     return result
 
-# print(myresult[0][0])
 processed_docs=[]
 #PREPROCESS ARTICLES9
 for result in myresult:
-    processed_docs.append(preprocess(result[0]))
-# processed_docs = map(preprocess, myresult)
+    processed_docs.append(preprocess(result[1]))
 
-with open("processed_docs.txt", "w") as fp:
+
+with open("processed_docs_160000.txt", "w") as fp:
     json.dump(processed_docs, fp)
 print("Preprocessed docs")
 # print(processed_docs)
 # #
-# dictionary = gensim.corpora.Dictionary(processed_docs)
-# # print(dictionary)
+dictionary = gensim.corpora.Dictionary(processed_docs)
+# print(dictionary)
 #
-# dictionary.save("dict")
+dictionary.save("dict_160000")
 # dict = gensim.corpora.Dictionary.load("dict")
 # print(dict)
 # count = 0
@@ -60,6 +59,3 @@ print("Preprocessed docs")
 #     count += 1
 #     if count > 10:
 #         break
-# # #2
-# with open('my_dict.json', 'w') as f:
-#     json.dump(dictionary, f)
