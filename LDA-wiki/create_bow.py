@@ -4,6 +4,8 @@ if __name__ == '__main__':
     from gensim import corpora, models
     import gensim
     import pprint
+    from gensim.test.utils import datapath
+
 
     #load processed_docs json
     with open("processed_docs.txt", "r") as fp:
@@ -26,15 +28,23 @@ if __name__ == '__main__':
             print(doc)
             break
         print("ok continue")
-        lda_model = gensim.models.ldamulticore.LdaMulticore(bow_corpus, num_topics=20, id2word=dictionary, passes=2, workers=8)
-        print("lda model implemented")
-        for idx, topic in lda_model.print_topics(-1):
-            print('Topic: {} \nWords: {}'.format(idx, topic))
+        # lda_model = gensim.models.ldamulticore.LdaMulticore(bow_corpus, num_topics=20, id2word=dictionary, passes=2, workers=8)
+        # print("lda model implemented")
+        # for idx, topic in lda_model.print_topics(-1):
+        #     print('Topic: {} \nWords: {}'.format(idx, topic))
+        #
+        lda_model_tfidf = gensim.models.LdaMulticore(corpus_tfidf, num_topics=20, id2word=dictionary, passes=2, workers=8)
+        for idx, topic in lda_model_tfidf.print_topics(-1):
+            print('Topic: {} Word: {}'.format(idx, topic))
 
+        # Save model to disk.
+        # temp_file = datapath("model")
+        # lda_model_tfidf.save("model_tfidf")
 
-     # lda_model_tfidf = gensim.models.LdaMulticore(corpus_tfidf, num_topics=20, id2word=dictionary, passes=2, workers=8)for idx, topic in lda_model_tfidf.print_topics(-1):print('Topic: {} Word: {}'.format(idx, topic))## processed_docs[4310]for index, score in sorted(lda_model[bow_corpus[70]], key=lambda tup: -1*tup[1]):print("nScore: {}t nTopic: {}".format(score, lda_model.print_topic(index, 20)))for index, score in sorted(lda_model_tfidf[bow_corpus[70]], key=lambda tup: -1*tup[1]):print("nScore: {}t nTopic: {}".format(score, lda_model_tfidf.print_topic(index, 20)))
-        # unseen_document = 'How a Pentagon deal became an identity crisis for Google'
-        # bow_vector = dictionary.doc2bow(preprocess(unseen_document))
-        # print(unseen_document)
-        # for index, score in sorted(lda_model[bow_vector], key=lambda tup: -1*tup[1]):
-        #     print("Score: {}\t Topic: {}".format(score, lda_model.print_topic(index, 20)))
+        # Load model from disk.
+        # lda_model_tfidf = gensim.models.LdaModel.load("model_tfidf")
+
+        # for index, score in sorted(lda_model[bow_corpus[70]], key=lambda tup: -1*tup[1]):
+        #     print("\nScore: {}\t \nTopic: {}".format(score, lda_model.print_topic(index, 20)))
+        # for index, score in sorted(lda_model_tfidf[bow_corpus[70]], key=lambda tup: -1*tup[1]):
+        #     print("\nScore: {}\t \nTopic: {}".format(score, lda_model_tfidf.print_topic(index, 20)))
