@@ -30,7 +30,7 @@ number_of_records = '500000'
 our_stopwords = []
 
 mycursor = mydb.cursor()
-selectQuery = "SELECT id, article FROM bios_final LIMIT "+number_of_records
+selectQuery = "SELECT id, article, enwiki_title FROM bios_final LIMIT "+number_of_records
 mycursor.execute(selectQuery)
 myresult = mycursor.fetchall()
 
@@ -55,8 +55,14 @@ with open('stopwords.csv') as csvfile:
 processed_docs=[]
 #PREPROCESS ARTICLES9
 for result in myresult:
-    processed_docs.append(preprocess(result[1], our_stopwords))
+    stop_name = []
+    for name in result[2].split("_"):
+        pr_name = gensim.utils.simple_preprocess(name)
+        for n in pr_name:
+            stop_name.append(lemmatize_stemming(n))
 
+    prprocessed = preprocess(result[1], our_stopwords+stop_name)
+    processed_docs.append(prprocessed)
 
 with open("processed_docs_"+number_of_records+"_"+d4+".txt", "w") as fp:
     json.dump(processed_docs, fp)
