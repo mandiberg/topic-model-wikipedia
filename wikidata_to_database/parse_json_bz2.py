@@ -35,7 +35,7 @@ filename_id = 0;
 i = 0
 # an empty dataframe which will save items information
 # you need to modify the columns in this data frame to save your modified data
-columnames=['id', 'type', 'english_label', 'enwiki_title', 'occupation', 'gender', 'citizenship'] #add DOB, active, etc here
+columnames=('id', 'type', 'english_label', 'enwiki_title', 'occupation', 'gender', 'citizenship') #add DOB, active, etc here
 df_record_all = pd.DataFrame(columns=columnames) 
 
 
@@ -90,7 +90,7 @@ if __name__ == '__main__':
                 # df_record_all = df_record_all.concat(df_record, ignore_index=True)
                 i += 1
                 # print(i)
-                if (i % 100 == 0):
+                if (i % 10000 == 0):
                     savename = 'wikidata_output_'+str(i)+'_lastrecord_'+record['id']+'.csv'
                     savepath = os.path.join(ROOT, savename)
                     pd.DataFrame.to_csv(df_record_all, path_or_buf=savepath)
@@ -98,7 +98,10 @@ if __name__ == '__main__':
                     print('i = '+str(i)+' item '+record['id']+'  Done!')
                     print('CSV exported')
                     #there is a better way of zeroing the df
-                    df_record_all = pd.DataFrame(columns=[columnames])
+                    df_record_all = pd.DataFrame(columns=columnames)
+                    # df_record_all.iloc[0:0]
+                    # print(df_record_all)
+
                 else:
                     # print('failed to save csv')
                     continue
