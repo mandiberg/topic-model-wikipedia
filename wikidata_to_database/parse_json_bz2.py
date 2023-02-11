@@ -6,6 +6,8 @@
 # Execute:
 # % python parse_json_bz2.py path/to/latest-all.json.bz2
 
+# https://query.wikidata.org/#SELECT%20DISTINCT%20?item%20?itemLabel%20WHERE%20%7B%0A%20%20SERVICE%20wikibase:label%20%7B%20bd:serviceParam%20wikibase:language%20%22%5BAUTO_LANGUAGE%5D%22.%20%7D%0A%20%20%7B%0A%20%20%20%20SELECT%20DISTINCT%20?item%20WHERE%20%7B%0A%20%20%20%20%20%20?item%20p:P1317%20?statement_0.%0A%20%20%20%20%20%20?statement_0%20psv:P1317%20?statementValue_0.%0A%20%20%20%20%20%20?statementValue_0%20wikibase:timeValue%20?P1317_0.%0A%20%20%20%20%7D%0A%20%20%20%20LIMIT%20100%0A%20%20%7D%0A%7D
+# P1317 floruit
 
 import bz2
 import json
@@ -28,14 +30,17 @@ elif platform == "win32":
     folder="foobar"
 
 ROOT = os.path.join(home,folder)
-
+#SIZE is the size of each CSV file saved
+SIZE = 10000
+#a number bigger than the total count of results
+INT_PREFIX = 10000000
 
 check_list = [23, 296, 297, 301, 352, 392, 504, 535, 557, 558, 762, 765, 767, 838, 930]
 filename_id = 0;
 i = 0
 # an empty dataframe which will save items information
 # you need to modify the columns in this data frame to save your modified data
-columnames=('id', 'type', 'english_label', 'enwiki_title', 'occupation', 'gender', 'citizenship') #add DOB, active, etc here
+columnames=('id', 'type', 'english_label', 'enwiki_title', 'occupation', 'gender', 'citizenship', 'date of birth', 'date of death', 'work period (start)', 'work period (end)','floruit','time period') #add DOB, active, etc here
 df_record_all = pd.DataFrame(columns=columnames) 
 
 
@@ -81,8 +86,15 @@ if __name__ == '__main__':
                 p21gender = pydash.get(record, 'claims.P21[0].mainsnak.datavalue.value.id')
                 p27citizenship = pydash.get(record, 'claims.P27[0].mainsnak.datavalue.value.id')
                 #DOB, active, etc =
+                birth = pydash.get(record, 'claims.P569[0].mainsnak.datavalue.value.time')
+                death = pydash.get(record, 'claims.P570[0].mainsnak.datavalue.value.time')
+                work_start = pydash.get(record, 'claims.P2031[0].mainsnak.datavalue.value.time')
+                work_end = pydash.get(record, 'claims.P2032[0].mainsnak.datavalue.value.time')
+                floruit = pydash.get(record, 'claims.P1317[0].mainsnak.datavalue.value.time')
+                time_period = pydash.get(record, 'claims.P2348[0].mainsnak.datavalue.value.id')
+                # print(birth, death, work_start, work_end, floruit, time_period)
                 #Add DOB, active, etc to DF below
-                df_record = pd.DataFrame({'id': item_id, 'type': item_type, 'english_label': english_label, 'enwiki_title': enwiki_link_title, 'occupation':p106occupation, 'gender':p21gender, 'citizenship':p27citizenship}, index=[i])
+                df_record = pd.DataFrame({'id': item_id, 'type': item_type, 'english_label': english_label, 'enwiki_title': enwiki_link_title, 'occupation':p106occupation, 'gender':p21gender, 'citizenship':p27citizenship, 'date of birth': birth, 'date of death': death, 'work period (start)': work_start, 'work period (end)': work_end, 'floruit': floruit, 'time period': time_period}, index=[i])
                 # df_record_all = df_record_all.append(df_record, ignore_index=True)
                 # dfallmaps = pd.concat([dfallmaps, dfthismap], ignore_index=True, sort=False)
                 df_record_all = pd.concat([df_record_all, df_record], ignore_index=True, sort=False)
@@ -90,10 +102,10 @@ if __name__ == '__main__':
                 # df_record_all = df_record_all.concat(df_record, ignore_index=True)
                 i += 1
                 # print(i)
-                if (i % 10000 == 0):
-                    savename = 'wikidata_output_'+str(i)+'_lastrecord_'+record['id']+'.csv'
+                if (i % SIZE == 0):
+                    savename = 'wikidata_output_'+str(i+INT_PREFIX)+'_lastrecord_'+record['id']+'.csv'
                     savepath = os.path.join(ROOT, savename)
-                    pd.DataFrame.to_csv(df_record_all, path_or_buf=savepath)
+                    pd.DataFrame.to_csv(df_record_all, path_or_buf=savepath,encoding='utf-8-sig')
                     filename_id = record['id']
                     print('i = '+str(i)+' item '+record['id']+'  Done!')
                     print('CSV exported')
